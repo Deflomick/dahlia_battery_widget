@@ -59,9 +59,9 @@ Future<void> startForegroundService({int intervalMs = 60000}) async {
       channelImportance: NotificationChannelImportance.LOW,
       priority: NotificationPriority.LOW,
       iconData: const NotificationIconData(
-        resType: ResourceType.mipmap,
+        resType: ResourceType.drawable,
         resPrefix: ResourcePrefix.ic,
-        name: 'launcher',
+        name: 'dahlia_mid',
       ),
     ),
     iosNotificationOptions: const IOSNotificationOptions(),

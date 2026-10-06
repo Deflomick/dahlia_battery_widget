@@ -168,18 +168,18 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Widget _buildPreviewImage() {
+  Widget _buildPreviewImage({double size = 160}) {
     return BatteryImageWidget(
       selectedSkin: _selectedSkin,
       batteryLevel: _batteryLevel,
       enableGlow: _enableGlow,
-      size: 200,
+      size: size,
     );
   }
 
   Future<void> _updateWidget({bool silent = false}) async {
     await _batteryService.updateBatteryWidget(
-      customImageWidget: _buildPreviewImage(),
+      customImageWidget: _buildPreviewImage(size: 200),
       temp: _temp,
       isFahrenheit: _isFahrenheit,
       isCharging: _isCharging,
@@ -235,130 +235,138 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(widget.title),
         elevation: 2,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Column(
-          children: <Widget>[
-            const SizedBox(height: 10),
-            const Text(
-              'Anteprima Icona Widget:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            _buildPreviewImage(),
-            const SizedBox(height: 15),
-            Text(
-              'Livello attuale: $_batteryLevel%',
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              _remainingTime,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.teal,
-                fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
+          child: Column(
+            children: <Widget>[
+              const SizedBox(height: 10),
+              const Text(
+                'Anteprima Icona Widget:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-            ),
-            const SizedBox(height: 15),
+              const SizedBox(height: 10),
+              _buildPreviewImage(),
+              const SizedBox(height: 15),
+              Text(
+                'Livello attuale: $_batteryLevel%',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                _remainingTime,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.teal,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 15),
 
-            // Card Diagnostica Batteria
-            DiagnosticCard(
-              health: _health,
-              temp: _temp,
-              voltage: _voltage,
-              technology: _technology,
-              isFahrenheit: _isFahrenheit,
-            ),
+              // Card Diagnostica Batteria
+              DiagnosticCard(
+                health: _health,
+                temp: _temp,
+                voltage: _voltage,
+                technology: _technology,
+                isFahrenheit: _isFahrenheit,
+              ),
 
-            const SizedBox(height: 15),
+              const SizedBox(height: 15),
 
-            // Selettore Skin
-            const Text(
-              'Scegli una Skin:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 4,
-              children: BatterySkin.values
-                  .map(
-                    (skin) => ChoiceChip(
-                      label: Text(skin.label),
-                      selected: _selectedSkin == skin,
-                      onSelected: (selected) {
-                        if (selected) _changeSkin(skin);
-                      },
-                    ),
-                  )
-                  .toList(),
-            ),
+              // Selettore Skin
+              const Text(
+                'Scegli una Skin:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 4,
+                children: BatterySkin.values
+                    .map(
+                      (skin) => ChoiceChip(
+                        label: Text(skin.label),
+                        selected: _selectedSkin == skin,
+                        onSelected: (selected) {
+                          if (selected) _changeSkin(skin);
+                        },
+                      ),
+                    )
+                    .toList(),
+              ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Card Impostazioni Personalizzate
-            SettingsCard(
-              isFahrenheit: _isFahrenheit,
-              enableGlow: _enableGlow,
-              alertThreshold: _alertThreshold,
-              refreshIntervalSeconds: _refreshIntervalSeconds,
-              onFahrenheitChanged: (val) {
-                setState(() => _isFahrenheit = val);
-                _updateSetting('is_fahrenheit', val);
-              },
-              onGlowChanged: (val) {
-                setState(() => _enableGlow = val);
-                _updateSetting('enable_glow', val);
-              },
-              onAlertThresholdChanged: (val) {
-                if (val != null) {
-                  setState(() => _alertThreshold = val);
-                  _updateSetting('alert_threshold', val);
-                }
-              },
-              onRefreshIntervalChanged: (val) {
-                if (val != null) {
-                  setState(() => _refreshIntervalSeconds = val);
-                  _updateSetting('refresh_interval_seconds', val);
-                }
-              },
-            ),
+              // Card Impostazioni Personalizzate
+              SettingsCard(
+                isFahrenheit: _isFahrenheit,
+                enableGlow: _enableGlow,
+                alertThreshold: _alertThreshold,
+                refreshIntervalSeconds: _refreshIntervalSeconds,
+                onFahrenheitChanged: (val) {
+                  setState(() => _isFahrenheit = val);
+                  _updateSetting('is_fahrenheit', val);
+                },
+                onGlowChanged: (val) {
+                  setState(() => _enableGlow = val);
+                  _updateSetting('enable_glow', val);
+                },
+                onAlertThresholdChanged: (val) {
+                  if (val != null) {
+                    setState(() => _alertThreshold = val);
+                    _updateSetting('alert_threshold', val);
+                  }
+                },
+                onRefreshIntervalChanged: (val) {
+                  if (val != null) {
+                    setState(() => _refreshIntervalSeconds = val);
+                    _updateSetting('refresh_interval_seconds', val);
+                  }
+                },
+              ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Pulsanti Azione
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _updateWidget,
-                    icon: const Icon(Icons.sync),
-                    label: const Text('Applica ai Widget'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+              // Pulsanti Azione
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _updateWidget,
+                      icon: const Icon(Icons.sync),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('Applica ai Widget'),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _toggleOverlay,
-                    icon: const Icon(Icons.layers),
-                    label: const Text('Toggle Overlay'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: Colors.teal.shade100,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _toggleOverlay,
+                      icon: const Icon(Icons.layers),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('Toggle Overlay'),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: Colors.teal.shade100,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 25),
-          ],
+                ],
+              ),
+              const SizedBox(height: 36),
+            ],
+          ),
         ),
       ),
     );

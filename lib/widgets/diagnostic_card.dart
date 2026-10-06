@@ -44,29 +44,37 @@ class DiagnosticCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _diagnosticItem(
-                  "Salute",
-                  health,
-                  Icons.favorite,
-                  Colors.green,
+                Expanded(
+                  child: _diagnosticItem(
+                    "Salute",
+                    health,
+                    Icons.favorite,
+                    Colors.green,
+                  ),
                 ),
-                _diagnosticItem(
-                  "Temperatura",
-                  "${displayTemp.toStringAsFixed(1)}$tempUnit",
-                  Icons.thermostat,
-                  temp > 38 ? Colors.red : Colors.orange,
+                Expanded(
+                  child: _diagnosticItem(
+                    "Temperatura",
+                    "${displayTemp.toStringAsFixed(1)}$tempUnit",
+                    Icons.thermostat,
+                    temp > 38 ? Colors.red : Colors.orange,
+                  ),
                 ),
-                _diagnosticItem(
-                  "Voltaggio",
-                  "${voltage.toStringAsFixed(2)} V",
-                  Icons.electric_bolt,
-                  Colors.amber,
+                Expanded(
+                  child: _diagnosticItem(
+                    "Voltaggio",
+                    "${voltage.toStringAsFixed(2)} V",
+                    Icons.electric_bolt,
+                    Colors.amber,
+                  ),
                 ),
-                _diagnosticItem(
-                  "Tecnologia",
-                  technology,
-                  Icons.memory,
-                  Colors.teal,
+                Expanded(
+                  child: _diagnosticItem(
+                    "Tecnologia",
+                    technology,
+                    Icons.memory,
+                    Colors.teal,
+                  ),
                 ),
               ],
             ),
@@ -83,16 +91,23 @@ class DiagnosticCard extends StatelessWidget {
     Color color,
   ) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: color, size: 28),
+        Icon(icon, color: color, size: 26),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
         ),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.grey, fontSize: 12),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.grey, fontSize: 11),
+          ),
         ),
       ],
     );
