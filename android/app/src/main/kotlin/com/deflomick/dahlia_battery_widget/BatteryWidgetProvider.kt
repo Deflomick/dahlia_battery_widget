@@ -74,38 +74,46 @@ abstract class BaseBatteryWidgetProvider(private val layoutResId: Int) : HomeWid
                     views.setTextViewText(R.id.status_text, if (isCharging) "In carica" else "In scarica")
                 } catch (_: Exception) {}
 
-                // 4. Immagine Skin — usa sempre la bitmap renderizzata da Flutter
-                // (che include già il glow e l'immagine corretta per tutti le skin,
-                //  compresa theDahlia). Il drawable nativo viene usato solo come fallback
-                //  se la bitmap Flutter non è ancora disponibile.
-                var imageLoaded = false
+                // 4. Immagine Skin
+                val selectedSkin = widgetData.getString("selected_skin", "theDahlia")
 
-                val imagePath = widgetData.getString("battery_image", null)
-                if (imagePath != null) {
-                    val bitmap = loadBitmapSafely(imagePath)
-                    if (bitmap != null) {
-                        try {
-                            views.setImageViewBitmap(R.id.battery_image, bitmap)
-                            imageLoaded = true
-                        } catch (_: Exception) {}
-                    }
-                }
-
-                if (!imageLoaded) {
-                    // Fallback nativo: usa il drawable Dahlia corrispondente al livello
-                    val selectedSkin = widgetData.getString("selected_skin", "theDahlia")
-                    val drawableRes = if (selectedSkin == "theDahlia" || selectedSkin == null) {
-                        when {
-                            level < 40  -> R.drawable.ic_dahlia_low
-                            level >= 80 -> R.drawable.ic_dahlia_high
-                            else        -> R.drawable.ic_dahlia_mid
-                        }
-                    } else {
-                        android.R.drawable.ic_lock_idle_low_battery
+                if (selectedSkin == "theDahlia" || selectedSkin == null) {
+                    // Per la skin The Dahlia il drawable nativo viene scelto SEMPRE
+                    // dinamicamente in base al livello attuale di carica:
+                    //   < 40%    -> ic_dahlia_low
+                    //   40-79%   -> ic_dahlia_mid
+                    //   >= 80%   -> ic_dahlia_high
+                    val drawableRes = when {
+                        level < 40  -> R.drawable.ic_dahlia_low
+                        level >= 80 -> R.drawable.ic_dahlia_high
+                        else        -> R.drawable.ic_dahlia_mid
                     }
                     try {
                         views.setImageViewResource(R.id.battery_image, drawableRes)
                     } catch (_: Exception) {}
+                } else {
+                    // Per le altre skin (Neon, Classic, Minimal, ecc.) usa la bitmap
+                    // renderizzata da Flutter salvata in SharedPreferences, con fallback sicuro
+                    var imageLoaded = false
+                    val imagePath = widgetData.getString("battery_image", null)
+                    if (imagePath != null) {
+                        val bitmap = loadBitmapSafely(imagePath)
+                        if (bitmap != null) {
+                            try {
+                                views.setImageViewBitmap(R.id.battery_image, bitmap)
+                                imageLoaded = true
+                            } catch (_: Exception) {}
+                        }
+                    }
+
+                    if (!imageLoaded) {
+                        try {
+                            views.setImageViewResource(
+                                R.id.battery_image,
+                                android.R.drawable.ic_lock_idle_low_battery
+                            )
+                        } catch (_: Exception) {}
+                    }
                 }
 
                 // 5. Impostazione PendingIntent
