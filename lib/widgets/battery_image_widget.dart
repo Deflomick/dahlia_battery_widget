@@ -72,11 +72,16 @@ class BatteryImageWidget extends StatelessWidget {
   }
 }
 
-/// Painter che disegna l'aura colorata con un [RadialGradient] all'interno dei bounds del widget.
+/// Painter che disegna l'aura colorata attorno all'immagine Dahlia.
 ///
-/// A differenza di [BoxShadow] (che emette luce fuori dai bounds e viene clippata da
-/// [HomeWidget.renderFlutterWidget]), il gradiente radiale rimane entro il rettangolo
-/// del canvas e viene correttamente incluso nella bitmap del widget Android.
+/// Usa [MaskFilter.blur] (primitiva Skia nativa) invece di [BoxShadow] o
+/// [RadialGradient], perché funziona correttamente nel renderer off-screen
+/// di [HomeWidget.renderFlutterWidget] e produce l'alone anche nella bitmap
+/// del widget Android.
+///
+/// Il cerchio viene disegnato esattamente al bordo esterno dell'immagine
+/// (raggio = size × 0.40, dato che l'immagine occupa size × 0.8 = 80% del container),
+/// e il blur gaussiano lo espande come alone attorno ad esso.
 class _GlowPainter extends CustomPainter {
   final int batteryLevel;
 
@@ -89,25 +94,17 @@ class _GlowPainter extends CustomPainter {
         : (batteryLevel >= 40 ? Colors.yellowAccent : Colors.redAccent);
 
     final center = size.center(Offset.zero);
-    final radius = size.shortestSide / 2;
 
-    // Gradiente ad anello: trasparente al centro (coperto dall'immagine),
-    // picco di luminosità attorno al bordo esterno dell'immagine (~55-75% del raggio),
-    // poi sfuma verso trasparente al bordo esterno del cerchio.
+    // L'immagine Dahlia è size*0.8 wide → il suo raggio = size*0.40.
+    // Disegnare il cerchio su quel raggio con blur gaussiano produce
+    // un alone che si espande verso l'interno e verso l'esterno dell'immagine.
+    final imageRadius = size.shortestSide * 0.40;
+
     final paint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          Colors.transparent,
-          Colors.transparent,
-          glowColor.withOpacity(0.75),
-          glowColor.withOpacity(0.55),
-          glowColor.withOpacity(0.15),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.38, 0.55, 0.68, 0.85, 1.0],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
+      ..color = glowColor.withOpacity(0.90)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
 
-    canvas.drawCircle(center, radius, paint);
+    canvas.drawCircle(center, imageRadius, paint);
   }
 
   @override
