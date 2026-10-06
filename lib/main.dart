@@ -3,7 +3,7 @@ import 'overlay/battery_overlay.dart' as overlay;
 import 'screens/home_screen.dart';
 import 'services/foreground_service.dart' as foreground;
 
-/// Punto di ingresso principale dell'applicazione "The Dahlia Theme".
+/// Punto di ingresso principale dell'applicazione "Dahlia Battery Widget".
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const DahliaBatteryApp());
@@ -28,7 +28,7 @@ class DahliaBatteryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'The Dahlia Theme',
+      title: 'Dahlia Battery Widget',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
@@ -37,7 +37,7 @@ class DahliaBatteryApp extends StatelessWidget {
           behavior: SnackBarBehavior.floating,
         ),
       ),
-      home: const HomeScreen(title: 'The Dahlia Theme'),
+      home: const HomeScreen(title: 'Dahlia Battery Widget'),
     );
   }
 }
