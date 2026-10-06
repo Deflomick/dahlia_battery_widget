@@ -50,13 +50,23 @@ class MyTaskHandler extends TaskHandler {
 
 /// Inizializza e avvia il servizio in primo piano [FlutterForegroundTask].
 Future<void> startForegroundService({int intervalMs = 60000}) async {
+  // Su Android 13+ richiede il permesso POST_NOTIFICATIONS se non ancora accordato
+  final NotificationPermission permission =
+      await FlutterForegroundTask.checkNotificationPermission();
+  if (permission != NotificationPermission.granted) {
+    await FlutterForegroundTask.requestNotificationPermission();
+  }
+
   FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
-      channelId: 'battery_status_channel',
+      channelId: 'dahlia_battery_service_channel',
       channelName: 'Dahlia Battery Monitor',
       channelDescription: 'Monitoraggio batteria e aggiornamenti widget Dahlia',
-      channelImportance: NotificationChannelImportance.LOW,
-      priority: NotificationPriority.LOW,
+      channelImportance: NotificationChannelImportance.DEFAULT,
+      priority: NotificationPriority.DEFAULT,
+      enableVibration: false,
+      playSound: false,
+      showWhen: false,
       iconData: const NotificationIconData(
         resType: ResourceType.drawable,
         resPrefix: ResourcePrefix.ic,
