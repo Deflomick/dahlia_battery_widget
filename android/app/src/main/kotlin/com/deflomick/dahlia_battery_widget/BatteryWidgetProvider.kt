@@ -1,4 +1,4 @@
-package com.example.mdfy_theme
+package com.deflomick.dahlia_battery_widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -10,7 +10,7 @@ import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetProvider
-import com.example.mdfy_theme.R
+import com.deflomick.dahlia_battery_widget.R
 import java.io.File
 
 abstract class BaseBatteryWidgetProvider(private val layoutResId: Int) : HomeWidgetProvider() {

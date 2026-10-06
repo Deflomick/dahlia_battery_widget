@@ -29,8 +29,9 @@ class BatteryWidgetService {
     'BatteryWidgetHorizontalProvider',
   ];
 
-  static const MethodChannel _channel =
-      MethodChannel('com.example.mdfy_theme/battery');
+  static const String batteryChannelName =
+      'com.deflomick.dahlia_battery_widget/battery';
+  static const MethodChannel _channel = MethodChannel(batteryChannelName);
   final Battery _battery = Battery();
 
   StreamSubscription<BatteryState>? _batterySubscription;

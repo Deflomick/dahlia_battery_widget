@@ -53,15 +53,14 @@ Future<void> startForegroundService({int intervalMs = 60000}) async {
   FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
       channelId: 'battery_status_channel',
-      channelName: 'Stato Batteria Dahlia',
-      channelDescription:
-          'Mantiene l\'overlay della batteria attivo in background',
+      channelName: 'Dahlia Battery Monitor',
+      channelDescription: 'Monitoraggio batteria e aggiornamenti widget Dahlia',
       channelImportance: NotificationChannelImportance.LOW,
       priority: NotificationPriority.LOW,
       iconData: const NotificationIconData(
         resType: ResourceType.drawable,
         resPrefix: ResourcePrefix.ic,
-        name: 'dahlia_mid',
+        name: 'dahlia_notification',
       ),
     ),
     iosNotificationOptions: const IOSNotificationOptions(),
@@ -74,8 +73,8 @@ Future<void> startForegroundService({int intervalMs = 60000}) async {
   );
 
   await FlutterForegroundTask.startService(
-    notificationTitle: 'Batteria Dahlia Attiva',
-    notificationText: 'L\'overlay personalizzato è in esecuzione',
+    notificationTitle: 'Dahlia Battery Monitor',
+    notificationText: 'Monitoraggio batteria attivo',
     callback: startCallback,
   );
 }

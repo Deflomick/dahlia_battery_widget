@@ -1,4 +1,4 @@
-package com.example.mdfy_theme
+package com.deflomick.dahlia_battery_widget
 
 import android.content.Context
 import android.content.Intent
@@ -10,7 +10,9 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "com.example.mdfy_theme/battery"
+    companion object {
+        const val CHANNEL = "com.deflomick.dahlia_battery_widget/battery"
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

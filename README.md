@@ -78,7 +78,7 @@ BatteryWidgetService (Singleton Stream & Telemetry Provider)
      │
      ├── battery_plus (Hardware events)
      │
-     └── MethodChannel ("com.example.mdfy_theme/battery")
+     └── MethodChannel ("com.deflomick.dahlia_battery_widget/battery")
               │
               ▼
         Android / Kotlin

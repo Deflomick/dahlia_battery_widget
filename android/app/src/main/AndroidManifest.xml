@@ -40,7 +40,7 @@
             android:foregroundServiceType="specialUse"
             android:exported="false" />
 
-        <receiver android:name="com.example.mdfy_theme.BatteryWidgetProvider"
+        <receiver android:name=".BatteryWidgetProvider"
             android:label="Batteria Dahlia (2x2 Standard)"
             android:enabled="true"
             android:exported="true">
@@ -51,7 +51,7 @@
                 android:resource="@xml/battery_widget_info" />
         </receiver>
 
-        <receiver android:name="com.example.mdfy_theme.BatteryWidgetCompactProvider"
+        <receiver android:name=".BatteryWidgetCompactProvider"
             android:label="Batteria Dahlia (1x1 Compatto)"
             android:enabled="true"
             android:exported="true">
@@ -62,7 +62,7 @@
                 android:resource="@xml/battery_widget_compact_info" />
         </receiver>
 
-        <receiver android:name="com.example.mdfy_theme.BatteryWidgetHorizontalProvider"
+        <receiver android:name=".BatteryWidgetHorizontalProvider"
             android:label="Batteria Dahlia (4x1 Banner Orizzontale)"
             android:enabled="true"
             android:exported="true">
