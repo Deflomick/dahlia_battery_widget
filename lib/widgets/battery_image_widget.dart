@@ -30,6 +30,7 @@ class BatteryImageWidget extends StatelessWidget {
         ),
         child: Stack(
           alignment: Alignment.center,
+          clipBehavior: Clip.none,
           children: [
             if (enableGlow)
               Positioned.fill(
@@ -90,14 +91,20 @@ class _GlowPainter extends CustomPainter {
     final center = size.center(Offset.zero);
     final radius = size.shortestSide / 2;
 
+    // Gradiente ad anello: trasparente al centro (coperto dall'immagine),
+    // picco di luminosità attorno al bordo esterno dell'immagine (~55-75% del raggio),
+    // poi sfuma verso trasparente al bordo esterno del cerchio.
     final paint = Paint()
       ..shader = RadialGradient(
         colors: [
+          Colors.transparent,
+          Colors.transparent,
+          glowColor.withOpacity(0.75),
           glowColor.withOpacity(0.55),
           glowColor.withOpacity(0.15),
           Colors.transparent,
         ],
-        stops: const [0.0, 0.45, 1.0],
+        stops: const [0.0, 0.38, 0.55, 0.68, 0.85, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: radius));
 
     canvas.drawCircle(center, radius, paint);
