@@ -32,22 +32,9 @@ class BatteryImageWidget extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             if (enableGlow)
-              Container(
-                width: size * 0.7,
-                height: size * 0.7,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: batteryLevel >= 80
-                          ? Colors.greenAccent.withOpacity(0.4)
-                          : (batteryLevel >= 40
-                              ? Colors.yellowAccent.withOpacity(0.3)
-                              : Colors.redAccent.withOpacity(0.4)),
-                      blurRadius: 30,
-                      spreadRadius: 10,
-                    ),
-                  ],
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _GlowPainter(batteryLevel: batteryLevel),
                 ),
               ),
             Center(
@@ -82,4 +69,41 @@ class BatteryImageWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Painter che disegna l'aura colorata con un [RadialGradient] all'interno dei bounds del widget.
+///
+/// A differenza di [BoxShadow] (che emette luce fuori dai bounds e viene clippata da
+/// [HomeWidget.renderFlutterWidget]), il gradiente radiale rimane entro il rettangolo
+/// del canvas e viene correttamente incluso nella bitmap del widget Android.
+class _GlowPainter extends CustomPainter {
+  final int batteryLevel;
+
+  const _GlowPainter({required this.batteryLevel});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Color glowColor = batteryLevel >= 80
+        ? Colors.greenAccent
+        : (batteryLevel >= 40 ? Colors.yellowAccent : Colors.redAccent);
+
+    final center = size.center(Offset.zero);
+    final radius = size.shortestSide / 2;
+
+    final paint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          glowColor.withOpacity(0.55),
+          glowColor.withOpacity(0.15),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.45, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+
+    canvas.drawCircle(center, radius, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _GlowPainter oldDelegate) =>
+      oldDelegate.batteryLevel != batteryLevel;
 }
