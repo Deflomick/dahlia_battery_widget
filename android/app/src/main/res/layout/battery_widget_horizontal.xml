@@ -13,9 +13,18 @@
         android:layout_marginEnd="12dp">
 
         <ImageView
+            android:id="@+id/battery_glow"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:layout_centerInParent="true"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+
+        <ImageView
             android:id="@+id/battery_image"
             android:layout_width="65dp"
             android:layout_height="65dp"
+            android:layout_centerInParent="true"
             android:scaleType="fitCenter"
             android:src="@android:drawable/ic_dialog_info" />
 

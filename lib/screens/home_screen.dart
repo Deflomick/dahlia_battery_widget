@@ -73,18 +73,26 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
+    final bool enableGlow = prefs.getBool('enable_glow') ?? true;
     setState(() {
       _isFahrenheit = prefs.getBool('is_fahrenheit') ?? false;
-      _enableGlow = prefs.getBool('enable_glow') ?? true;
+      _enableGlow = enableGlow;
       _alertThreshold = prefs.getInt('alert_threshold') ?? 80;
       _refreshIntervalSeconds = prefs.getInt('refresh_interval_seconds') ?? 60;
     });
+    await HomeWidget.saveWidgetData<bool>('enable_glow', enableGlow);
   }
 
   Future<void> _updateSetting(String key, dynamic value) async {
     final prefs = await SharedPreferences.getInstance();
-    if (value is bool) await prefs.setBool(key, value);
-    if (value is int) await prefs.setInt(key, value);
+    if (value is bool) {
+      await prefs.setBool(key, value);
+      await HomeWidget.saveWidgetData<bool>(key, value);
+    }
+    if (value is int) {
+      await prefs.setInt(key, value);
+      await HomeWidget.saveWidgetData<int>(key, value);
+    }
 
     _updateWidget(silent: true);
 

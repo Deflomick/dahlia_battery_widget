@@ -158,10 +158,30 @@ abstract class BaseBatteryWidgetProvider(private val layoutResId: Int) : HomeWid
                     views.setTextViewText(R.id.status_text, if (isCharging) "In carica" else "In scarica")
                 } catch (_: Exception) {}
 
-                // 4. Immagine Skin
+                // 4. Immagine Skin e Native Glow
                 val selectedSkin = widgetData.getString("selected_skin", "theDahlia")
+                val isDahliaSkin = selectedSkin == "theDahlia" || selectedSkin == null
 
-                if (selectedSkin == "theDahlia" || selectedSkin == null) {
+                // 4.1 Native Glow per The Dahlia (gestito puramente in Android RemoteViews)
+                val enableGlow = widgetData.getBoolean("enable_glow", true)
+                if (enableGlow && isDahliaSkin) {
+                    val glowRes = when {
+                        level < 40  -> R.drawable.bg_glow_red
+                        level >= 80 -> R.drawable.bg_glow_green
+                        else        -> R.drawable.bg_glow_yellow
+                    }
+                    try {
+                        views.setImageViewResource(R.id.battery_glow, glowRes)
+                        views.setViewVisibility(R.id.battery_glow, View.VISIBLE)
+                    } catch (_: Exception) {}
+                } else {
+                    try {
+                        views.setViewVisibility(R.id.battery_glow, View.GONE)
+                    } catch (_: Exception) {}
+                }
+
+                // 4.2 Immagine Principale
+                if (isDahliaSkin) {
                     // Per la skin The Dahlia il drawable nativo viene scelto SEMPRE
                     // dinamicamente in base al livello attuale di carica:
                     //   < 40%    -> ic_dahlia_low
@@ -203,6 +223,7 @@ abstract class BaseBatteryWidgetProvider(private val layoutResId: Int) : HomeWid
                 // 5. Impostazione PendingIntent
                 if (pendingIntent != null) {
                     try {
+                        views.setOnClickPendingIntent(R.id.battery_glow, pendingIntent)
                         views.setOnClickPendingIntent(R.id.battery_image, pendingIntent)
                         views.setOnClickPendingIntent(R.id.battery_text, pendingIntent)
                     } catch (_: Exception) {}
