@@ -37,12 +37,21 @@ abstract class BaseBatteryWidgetProvider(private val layoutResId: Int) : HomeWid
             val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
             if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
                 val widgetData = HomeWidgetPlugin.getData(context)
-                onUpdate(context, appWidgetManager, appWidgetIds, widgetData)
+                updateWidgets(context, appWidgetManager, appWidgetIds, widgetData)
             }
         }
     }
 
     override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray,
+        widgetData: SharedPreferences
+    ) {
+        updateWidgets(context, appWidgetManager, appWidgetIds, widgetData)
+    }
+
+    private fun updateWidgets(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
@@ -121,12 +130,15 @@ abstract class BaseBatteryWidgetProvider(private val layoutResId: Int) : HomeWid
                     }
                 } catch (_: Exception) {}
 
-                // 2.5 Voltaggio
+                // 2.5 Voltaggio (con normalizzazione robusta dell'unità "V")
                 val rawVolt = batteryStatus?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
                 val voltage = if (rawVolt > 0) {
                     String.format(Locale.US, "%.2f V", rawVolt / 1000.0)
                 } else {
-                    widgetData.getString("voltage_v2", null)
+                    val savedVolt = widgetData.getString("voltage_v2", null)?.trim()
+                    if (savedVolt != null && savedVolt.isNotEmpty()) {
+                        if (savedVolt.endsWith("V", ignoreCase = true)) savedVolt else "$savedVolt V"
+                    } else null
                 }
                 try {
                     if (voltage != null) {
