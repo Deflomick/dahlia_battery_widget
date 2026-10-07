@@ -4,7 +4,7 @@
     android:minHeight="110dp"
     android:minResizeWidth="70dp"
     android:minResizeHeight="70dp"
-    android:updatePeriodMillis="0"
+    android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/battery_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen">

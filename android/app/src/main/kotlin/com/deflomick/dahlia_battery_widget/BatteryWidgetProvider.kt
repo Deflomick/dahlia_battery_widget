@@ -2,18 +2,45 @@ package com.deflomick.dahlia_battery_widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.BatteryManager
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import es.antonborri.home_widget.HomeWidgetPlugin
 import es.antonborri.home_widget.HomeWidgetProvider
 import com.deflomick.dahlia_battery_widget.R
 import java.io.File
+import java.util.Locale
 
 abstract class BaseBatteryWidgetProvider(private val layoutResId: Int) : HomeWidgetProvider() {
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        val action = intent.action
+        if (action == Intent.ACTION_POWER_CONNECTED ||
+            action == Intent.ACTION_POWER_DISCONNECTED ||
+            action == Intent.ACTION_BATTERY_LOW ||
+            action == Intent.ACTION_BATTERY_OKAY ||
+            action == Intent.ACTION_BOOT_COMPLETED ||
+            action == Intent.ACTION_MY_PACKAGE_REPLACED ||
+            action == Intent.ACTION_USER_PRESENT
+        ) {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val componentName = ComponentName(context, javaClass)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
+            if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
+                val widgetData = HomeWidgetPlugin.getData(context)
+                onUpdate(context, appWidgetManager, appWidgetIds, widgetData)
+            }
+        }
+    }
 
     override fun onUpdate(
         context: Context,
@@ -32,18 +59,59 @@ abstract class BaseBatteryWidgetProvider(private val layoutResId: Int) : HomeWid
             )
         } else null
 
+        // 0. Query Live Hardware Battery State from Android system
+        val batteryStatus: Intent? = try {
+            context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        } catch (_: Exception) {
+            null
+        }
+
+        val rawLevel = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+        val scale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+        val nativeLevel = if (rawLevel >= 0 && scale > 0) (rawLevel * 100) / scale else -1
+
+        val level = if (nativeLevel in 0..100) {
+            nativeLevel
+        } else {
+            widgetData.getInt("level_v2", widgetData.getInt("battery_level", 100))
+        }
+
+        val status = batteryStatus?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+        val isCharging = if (status != -1) {
+            status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+        } else {
+            widgetData.getBoolean("charging_v2", false)
+        }
+
+        // Keep SharedPreferences aligned with the real battery state
+        try {
+            widgetData.edit()
+                .putInt("level_v2", level)
+                .putBoolean("charging_v2", isCharging)
+                .apply()
+        } catch (_: Exception) {}
+
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(packageName, layoutResId)
 
             try {
                 // 1. Livello Batteria
-                val level = widgetData.getInt("level_v2", widgetData.getInt("battery_level", 100))
-                try {
-                    views.setTextViewText(R.id.battery_text, "$level%")
-                } catch (_: Exception) {}
+                views.setTextViewText(R.id.battery_text, "$level%")
 
                 // 2. Temperatura
-                val temp = widgetData.getString("temp_v2", null)
+                val rawTemp = batteryStatus?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
+                val temp = if (rawTemp > 0) {
+                    val tempC = rawTemp / 10.0
+                    val isFahrenheit = widgetData.getBoolean("is_fahrenheit", false)
+                    if (isFahrenheit) {
+                        val tempF = (tempC * 9.0 / 5.0) + 32.0
+                        String.format(Locale.US, "%.1f°F", tempF)
+                    } else {
+                        String.format(Locale.US, "%.1f°C", tempC)
+                    }
+                } else {
+                    widgetData.getString("temp_v2", null)
+                }
                 try {
                     if (temp != null) {
                         views.setViewVisibility(R.id.temp_text, View.VISIBLE)
@@ -54,18 +122,22 @@ abstract class BaseBatteryWidgetProvider(private val layoutResId: Int) : HomeWid
                 } catch (_: Exception) {}
 
                 // 2.5 Voltaggio
-                val voltage = widgetData.getString("voltage_v2", null)
+                val rawVolt = batteryStatus?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
+                val voltage = if (rawVolt > 0) {
+                    String.format(Locale.US, "%.2f V", rawVolt / 1000.0)
+                } else {
+                    widgetData.getString("voltage_v2", null)
+                }
                 try {
                     if (voltage != null) {
                         views.setViewVisibility(R.id.voltage_text, View.VISIBLE)
-                        views.setTextViewText(R.id.voltage_text, "$voltage V")
+                        views.setTextViewText(R.id.voltage_text, voltage)
                     } else {
                         views.setViewVisibility(R.id.voltage_text, View.GONE)
                     }
                 } catch (_: Exception) {}
 
                 // 3. Icona e Testo Ricarica
-                val isCharging = widgetData.getBoolean("charging_v2", false)
                 try {
                     views.setViewVisibility(R.id.charging_icon, if (isCharging) View.VISIBLE else View.GONE)
                 } catch (_: Exception) {}
