@@ -1,9 +1,11 @@
 import 'package:battery_plus/battery_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dahlia_battery_widget/enums/battery_skin.dart';
 import 'package:dahlia_battery_widget/models/battery_data.dart';
 import 'package:dahlia_battery_widget/painters/battery_skin_painter.dart';
 import 'package:dahlia_battery_widget/services/battery_widget_service.dart';
+import 'package:dahlia_battery_widget/services/foreground_service.dart';
 
 void main() {
   group('BatteryWidgetService Pure Helpers', () {
@@ -117,6 +119,32 @@ void main() {
       expect(painter1.shouldRepaint(painterSame), isFalse);
       expect(painter1.shouldRepaint(painterDifferentLevel), isTrue);
       expect(painter1.shouldRepaint(painterDifferentSkin), isTrue);
+    });
+  });
+
+  group('MyTaskHandler Error Resilience', () {
+    test(
+        'onRepeatEvent handles asynchronous battery exception gracefully without throwing',
+        () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+        const MethodChannel('dev.fluttercommunity.plus/battery'),
+        (MethodCall call) async {
+          throw PlatformException(
+            code: 'BATTERY_ERROR',
+            message: 'Simulated battery read failure',
+          );
+        },
+      );
+
+      final handler = MyTaskHandler();
+
+      await expectLater(
+        handler.onRepeatEvent(DateTime.now(), null),
+        completes,
+      );
     });
   });
 }

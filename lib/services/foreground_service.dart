@@ -18,30 +18,40 @@ class MyTaskHandler extends TaskHandler {
 
   @override
   Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
-    final battery = Battery();
-    final int level = await battery.batteryLevel;
-    final state = await battery.batteryState;
-    final isCharging = state == BatteryState.charging;
-
     try {
-      await HomeWidget.saveWidgetData<int>(
-          BatteryWidgetService.keyLevel, level);
-      await HomeWidget.saveWidgetData<bool>(
-        BatteryWidgetService.keyCharging,
-        isCharging,
-      );
+      final battery = Battery();
+      final int level = await battery.batteryLevel;
+      final state = await battery.batteryState;
+      final isCharging = state == BatteryState.charging;
 
-      for (final widgetName in BatteryWidgetService.androidWidgetNames) {
-        await HomeWidget.updateWidget(androidName: widgetName);
+      try {
+        await HomeWidget.saveWidgetData<int>(
+          BatteryWidgetService.keyLevel,
+          level,
+        );
+        await HomeWidget.saveWidgetData<bool>(
+          BatteryWidgetService.keyCharging,
+          isCharging,
+        );
+
+        for (final widgetName in BatteryWidgetService.androidWidgetNames) {
+          await HomeWidget.updateWidget(androidName: widgetName);
+        }
+      } catch (e, stackTrace) {
+        debugPrint(
+          'Errore aggiornamento HomeWidget nel task foreground [${e.runtimeType}]: $e\n$stackTrace',
+        );
       }
-    } catch (e) {
-      debugPrint("Errore aggiornamento widget nel task foreground: $e");
-    }
 
-    sendPort?.send({
-      'level': level,
-      'isCharging': isCharging,
-    });
+      sendPort?.send({
+        'level': level,
+        'isCharging': isCharging,
+      });
+    } catch (e, stackTrace) {
+      debugPrint(
+        'Errore ciclo onRepeatEvent nel task foreground ($timestamp) [${e.runtimeType}]: $e\n$stackTrace',
+      );
+    }
   }
 
   @override
