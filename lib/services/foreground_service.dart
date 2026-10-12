@@ -88,7 +88,7 @@ Future<void> startForegroundService({int intervalMs = 60000}) async {
       interval: intervalMs,
       autoRunOnBoot: true,
       allowWakeLock: true,
-      allowWifiLock: true,
+      allowWifiLock: false,
     ),
   );
 
